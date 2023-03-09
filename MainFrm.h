@@ -15,6 +15,8 @@
 #pragma once
 #include "PropertiesWnd.h"
 
+class ContextPropSheet;
+
 class MainFrame : public CMDIFrameWndEx
 {
 	DECLARE_DYNAMIC(MainFrame)
@@ -39,6 +41,9 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
+	void SubscribeToolTipProvider( ContextPropSheet * provider );
+	void UnsubscribeToolTipProvider( ContextPropSheet * provider );
+
 protected:  // control bar embedded members
 	CMFCRibbonBar     m_wndRibbonBar;
 	CMFCRibbonApplicationButton m_MainButton;
@@ -46,6 +51,7 @@ protected:  // control bar embedded members
 	CMFCRibbonStatusBar  m_wndStatusBar;
 	CPropertiesWnd    m_wndProperties;
 	CMFCCaptionBar    m_wndCaptionBar;
+	ContextPropSheet * m_tooltip_provider{ NULL };
 
 // Generated message map functions
 protected:
@@ -60,6 +66,7 @@ protected:
 	void SetDockingWindowIcons(BOOL bHiColorIcons);
 	BOOL CreateCaptionBar();
 	afx_msg void OnContext();
+	virtual BOOL GetToolbarButtonToolTipText( CMFCToolBarButton * pButton, CString & strTTText );
 };
 
 
