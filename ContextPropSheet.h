@@ -1,18 +1,18 @@
 #pragma once
 #include <afxpropertysheet.h>
+#include "ToolTipTextProvider.h"
 
 class MainFrame;
 
 class ContextPropSheet :
-    public CMFCPropertySheet
+    public CMFCPropertySheet,
+    public CToolTipTextProviderItem
 {
-protected:
-  MainFrame * m_mainFrame;
 public:
-  ContextPropSheet( MainFrame * mainFrame );
-  virtual ~ContextPropSheet();
+  ContextPropSheet( CToolTipTextProviderList * list );
   virtual BOOL OnInitDialog();
-  BOOL OnGetToolTipText( CMFCToolBarButton * pButton, CString & strTTText );
+  virtual BOOL OnGetToolTipText( CMFCToolBarButton * pButton, CString & strTTText );
+  virtual BOOL FillToolTipText( CMFCOutlookBarPaneButton * pButton, CString & strTTText );
 
   DECLARE_MESSAGE_MAP()
 };

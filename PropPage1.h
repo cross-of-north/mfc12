@@ -9,7 +9,7 @@ class PropPage1 : public CMFCPropertyPage
 	DECLARE_DYNAMIC(PropPage1)
 
 public:
-	PropPage1(CWnd* pParent = nullptr);   // standard constructor
+	PropPage1(const int iResourceID, CWnd* pParent = nullptr);   // standard constructor
 	virtual ~PropPage1();
 
 // Dialog Data

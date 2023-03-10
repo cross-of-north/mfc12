@@ -228,23 +228,15 @@ void MainFrame::OnOptions()
 
 void MainFrame::OnContext()
 {
-	ContextPropSheet contextPropSheet( this );
-	PropPage1 propPage1;
+	ContextPropSheet contextPropSheet( &m_tooltipProvider );
+	PropPage1 propPage1( IDD_PROPPAGE_LARGE );
+	PropPage1 propPage2( IDD_PROPPAGE_LARGE2 );
 	contextPropSheet.AddPage( &propPage1 );
+	contextPropSheet.AddPage( &propPage2 );
+	contextPropSheet.SetTitle( L"Context properties opened at " + CTime::GetCurrentTime().Format("%H:%M:%S") );
 	INT_PTR response = contextPropSheet.DoModal();
 }
 
-// TODO: a better subscription mechanism
-void MainFrame::SubscribeToolTipProvider( ContextPropSheet * provider ) {
-	m_tooltip_provider = provider;
-}
-
-void MainFrame::UnsubscribeToolTipProvider( ContextPropSheet * provider ) {
-	if ( m_tooltip_provider = provider ) {
-		m_tooltip_provider = NULL;
-	}
-}
-
 BOOL MainFrame::GetToolbarButtonToolTipText( CMFCToolBarButton * pButton, CString & strTTText ) {
-	return m_tooltip_provider == NULL ? FALSE : m_tooltip_provider->OnGetToolTipText( pButton, strTTText );
+	return m_tooltipProvider.OnGetToolTipText( pButton, strTTText );
 }

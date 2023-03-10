@@ -12,8 +12,8 @@
 
 IMPLEMENT_DYNAMIC(PropPage1, CMFCPropertyPage)
 
-PropPage1::PropPage1(CWnd* pParent /*=nullptr*/)
-	: CMFCPropertyPage(IDD_PROPPAGE_LARGE)
+PropPage1::PropPage1( const int iResourceID, CWnd* pParent /*=nullptr*/)
+	: CMFCPropertyPage( iResourceID)
 {
 
 }
