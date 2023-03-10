@@ -7,6 +7,13 @@
 
 /*
 
+The problem is that the custom tooltip text messages are sent not to the controls the mouse is howering over,
+but to the top-level main frame of the application.
+To customize tooltip texts at the related control level, we do the following.
+We are hooking the "get tooltip text" message at the main frame level.
+There is a function for this already, CMDIFrameWndEx::GetToolbarButtonToolTipText.
+Then we route the message to the related control (provided the control is subcribed for this message processing).
+
 Usage:
 
 - Instantiate CToolTipTextProviderList in the main frame context.
