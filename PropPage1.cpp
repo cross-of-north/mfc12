@@ -12,8 +12,9 @@
 
 IMPLEMENT_DYNAMIC(PropPage1, CMFCPropertyPage)
 
-PropPage1::PropPage1( const int iResourceID, CWnd* pParent /*=nullptr*/)
-	: CMFCPropertyPage( iResourceID)
+PropPage1::PropPage1( const int iResourceID, const CString stringID, CWnd* pParent /*=nullptr*/)
+	: CMFCPropertyPage( iResourceID )
+	, m_stringID( stringID )
 {
 
 }

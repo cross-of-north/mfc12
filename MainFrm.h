@@ -49,6 +49,7 @@ protected:  // control bar embedded members
 	CMFCRibbonStatusBar  m_wndStatusBar;
 	CPropertiesWnd    m_wndProperties;
 	CMFCCaptionBar    m_wndCaptionBar;
+
 	CToolTipTextProviderList m_tooltipProvider;
 
 // Generated message map functions
