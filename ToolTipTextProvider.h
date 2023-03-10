@@ -9,8 +9,8 @@
 
 Usage:
 
-- Instantiate CToolTipTextProviderList int the main frame context.
-- Override CMDIFrameWndEx::GetToolbarButtonToolTipText at the main frame class, translate call to the CToolTipTextProviderList::OnGetToolTipText.
+- Instantiate CToolTipTextProviderList in the main frame context.
+- Override CMDIFrameWndEx::GetToolbarButtonToolTipText at the main frame class, translate the call to the CToolTipTextProviderList::OnGetToolTipText.
 
 	class MainFrame : public CMDIFrameWndEx {
 	...
@@ -21,7 +21,7 @@ Usage:
 		}
 	...
 
-- Instantiate (or inherit) CMFCPropertySheetToolTipTextProvider in the property sheet, passing CToolTipTextProviderList instance to the constructor.
+- Instantiate (or inherit) CMFCPropertySheetToolTipTextProvider in the property sheet, passing CToolTipTextProviderList instance to its constructor.
 - Override CMFCPropertySheetToolTipTextProvider::FillToolTipText, update text of the CString& passed, return TRUE if the text is updated.
 
 	class ContextPropSheet : public CMFCPropertySheet, public CMFCPropertySheetToolTipTextProvider {
