@@ -9,7 +9,8 @@ END_MESSAGE_MAP()
 
 ContextPropSheet::ContextPropSheet( CToolTipTextProviderList * list )
 	: CMFCPropertySheet( L"Context", this )
-	, CToolTipTextProviderItem( list ) {
+	, CToolTipTextProviderItem( list )
+{
 	SetLook( CMFCPropertySheet::PropSheetLook_OutlookBar ); // outlookbar mode not tree or list so page icons will show up and so tooltips will appear
 	SetIconsList( IDB_CONTEXT_LARGE, 32 );
 	EnableToolTips();
@@ -41,7 +42,9 @@ BOOL ContextPropSheet::OnGetToolTipText( CMFCToolBarButton * pButton, CString & 
 }
 
 BOOL ContextPropSheet::FillToolTipText( CMFCOutlookBarPaneButton * pButton, CString & strTTText ) {
-	strTTText = pButton->m_strText;
+	strTTText = m_strCaption;
+	strTTText += ", ";
+	strTTText += pButton->m_strText;
 	strTTText += " tooltip at time ";
 	strTTText += CTime::GetCurrentTime().Format( "%H:%M:%S" );
 	return TRUE;

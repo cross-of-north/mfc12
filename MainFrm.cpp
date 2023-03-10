@@ -229,8 +229,11 @@ void MainFrame::OnOptions()
 void MainFrame::OnContext()
 {
 	ContextPropSheet contextPropSheet( &m_tooltipProvider );
-	PropPage1 propPage1;
+	PropPage1 propPage1( IDD_PROPPAGE_LARGE );
+	PropPage1 propPage2( IDD_PROPPAGE_LARGE2 );
 	contextPropSheet.AddPage( &propPage1 );
+	contextPropSheet.AddPage( &propPage2 );
+	contextPropSheet.SetTitle( L"Context properties opened at " + CTime::GetCurrentTime().Format("%H:%M:%S") );
 	INT_PTR response = contextPropSheet.DoModal();
 }
 

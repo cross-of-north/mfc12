@@ -5,6 +5,7 @@
 #define IDD_ABOUTBOX                    100
 #define IDP_OLE_INIT_FAILED             100
 #define IDD_PROPPAGE_LARGE              107
+#define IDD_PROPPAGE_LARGE2             108
 #define IDB_WRITESMALL                  110
 #define IDB_WRITELARGE                  111
 #define IDB_MAIN                        112
