@@ -1,5 +1,3 @@
-// MyListCtrl.cpp : implementation file
-//
 
 #include "pch.h"
 #include "ToolTipTextProvider.h"
