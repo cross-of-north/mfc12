@@ -16,8 +16,6 @@
 #include "PropertiesWnd.h"
 #include "ToolTipTextProvider.h"
 
-class ContextPropSheet;
-
 class MainFrame : public CMDIFrameWndEx
 {
 	DECLARE_DYNAMIC(MainFrame)

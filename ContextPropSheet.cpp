@@ -17,7 +17,8 @@ ContextPropSheet::ContextPropSheet( CToolTipTextProviderList * list )
 	EnableToolTips();
 }
 
-BOOL ContextPropSheet::OnInitDialog() {
+BOOL ContextPropSheet::OnInitDialog()
+{
 	BOOL oKay { TRUE };
 	BOOL bResult = CMFCPropertySheet::OnInitDialog();
 
