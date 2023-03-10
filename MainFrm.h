@@ -14,6 +14,7 @@
 
 #pragma once
 #include "PropertiesWnd.h"
+#include "ToolTipTextProvider.h"
 
 class ContextPropSheet;
 
@@ -41,9 +42,6 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-	void SubscribeToolTipProvider( ContextPropSheet * provider );
-	void UnsubscribeToolTipProvider( ContextPropSheet * provider );
-
 protected:  // control bar embedded members
 	CMFCRibbonBar     m_wndRibbonBar;
 	CMFCRibbonApplicationButton m_MainButton;
@@ -51,7 +49,7 @@ protected:  // control bar embedded members
 	CMFCRibbonStatusBar  m_wndStatusBar;
 	CPropertiesWnd    m_wndProperties;
 	CMFCCaptionBar    m_wndCaptionBar;
-	ContextPropSheet * m_tooltip_provider{ NULL };
+	CToolTipTextProviderList m_tooltipProvider;
 
 // Generated message map functions
 protected:

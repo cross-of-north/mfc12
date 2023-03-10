@@ -54,6 +54,9 @@
     <ClInclude Include="MyListCtrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ToolTipTextProvider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFC12.cpp">
@@ -84,6 +87,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MyListCtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolTipTextProvider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
