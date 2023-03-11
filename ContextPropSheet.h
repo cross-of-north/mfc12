@@ -6,13 +6,12 @@ class MainFrame;
 
 class ContextPropSheet :
     public CMFCPropertySheet,
-    public CMFCPropertySheetToolTipTextProvider
+    public CMFCPropertySheetToolTipDataProvider
 {
 public:
-  ContextPropSheet( CToolTipTextProviderList * list );
+  ContextPropSheet( CToolTipDataProviderList * list );
   virtual BOOL OnInitDialog();
-  virtual BOOL FillToolTipText( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CString & strTTText );
-  virtual BOOL FillToolTipDescription( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CString & rMessage );
+  virtual BOOL FillToolTipProperties( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CToolTipDataProviderProperties & props );
 
   DECLARE_MESSAGE_MAP()
 };

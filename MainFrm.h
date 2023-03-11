@@ -48,7 +48,7 @@ protected:  // control bar embedded members
 	CPropertiesWnd    m_wndProperties;
 	CMFCCaptionBar    m_wndCaptionBar;
 
-	CToolTipTextProviderList m_tooltipProvider;
+	CToolTipDataProviderList m_tooltipProvider;
 
 // Generated message map functions
 protected:

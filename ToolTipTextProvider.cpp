@@ -3,73 +3,156 @@
 #include "ToolTipTextProvider.h"
 
 
-// CToolTipTextProvider
+class CCustomMFCRibbonButton: public CMFCRibbonButton {
+public:
+    CCustomMFCRibbonButton( UINT nID, LPCTSTR lpszText, HICON hIcon, BOOL bAlwaysShowDescription = FALSE, HICON hIconSmall = NULL, BOOL bAutoDestroyIcon = FALSE, BOOL bAlphaBlendIcon = FALSE )
+        : CMFCRibbonButton( nID, lpszText, hIcon, bAlwaysShowDescription, hIconSmall, bAutoDestroyIcon, bAlphaBlendIcon ) {
+        m_bIsLargeImage = TRUE;
+    }
+    virtual ~CCustomMFCRibbonButton() {
+    }
+};
 
-CToolTipTextProvider::CToolTipTextProvider( CToolTipTextProviderList * list )
+// the hack to access internal structures from here
+class friendly_CMFCToolTipCtrl: public CMFCToolTipCtrl {
+    friend class CToolTipDataProvider;
+};
+class friendly_CMFCOutlookBarPaneList: public CMFCOutlookBarPaneList {
+    friend class CMFCPropertySheetToolTipDataProvider;
+};
+class friendly_CMFCPropertySheet: public CMFCPropertySheet {
+    friend class CMFCPropertySheetToolTipDataProvider;
+};
+
+
+
+// CToolTipDataProviderProperties
+
+CToolTipDataProviderProperties::CToolTipDataProviderProperties( CMFCToolBarButton * pButton )
+    : m_hIcon( NULL )
+    , m_pButton( pButton )
+    , m_pToolTip( NULL )
+    , m_pRibbonButton( NULL )
+{
+}
+
+CToolTipDataProviderProperties::~CToolTipDataProviderProperties() {
+    delete m_pRibbonButton;
+}
+
+
+// CToolTipDataProvider
+
+CToolTipDataProvider::CToolTipDataProvider( CToolTipDataProviderList * list )
 : m_list( list )
 {
     Subscribe( m_list );
 }
 
-CToolTipTextProvider::~CToolTipTextProvider() {
+CToolTipDataProvider::~CToolTipDataProvider() {
     Unsubscribe();
+    POSITION pos = m_toolTipDataMap.GetStartPosition();
+    while ( pos != NULL ) {
+        UINT key = 0;
+        CToolTipDataProviderProperties * props = NULL;
+        m_toolTipDataMap.GetNextAssoc( pos, key, props );
+        delete props;
+    }
 }
 
-void CToolTipTextProvider::Subscribe( CToolTipTextProviderList * list ) {
+void CToolTipDataProvider::Subscribe( CToolTipDataProviderList * list ) {
     if ( list != NULL ) {
         m_list = list;
         m_list->AddProvider( this );
     }
 }
 
-void CToolTipTextProvider::Unsubscribe() {
+void CToolTipDataProvider::Unsubscribe() {
     if ( m_list != NULL ) {
         m_list->RemoveProvider( this );
     }
 }
 
-BOOL CToolTipTextProvider::OnGetToolTipText( CMFCToolBarButton * /*pButton*/, CString & /*strTTText*/ ) {
+BOOL CToolTipDataProvider::OnGetToolTipText( CMFCToolBarButton * pButton, CString & strTTText ) {
+
+    CToolTipDataProviderProperties * props = new CToolTipDataProviderProperties( pButton );
+    BOOL bResult = FillToolTipProperties( *props );
+
+    if ( bResult ) {
+        // Not all buttons have command IDs set, but we need ID to differentiate buttons in OnGetMessageString().
+        // When there is no command ID, we set low DWORD of button address (sufficiently unique) as a command ID.
+        if ( pButton->m_nID == 0 ) {
+            pButton->m_nID = PtrToUint( pButton );
+        }
+        CToolTipDataProviderProperties * old_props = NULL;
+        m_toolTipDataMap.Lookup( pButton->m_nID, old_props );
+        if ( old_props != NULL ) {
+            delete old_props;
+        }
+        m_toolTipDataMap[ pButton->m_nID ] = props;
+        strTTText = props->m_strText;
+        if ( props->m_hIcon != NULL && props->m_pToolTip != NULL ) {
+            delete props->m_pRibbonButton;
+            props->m_pRibbonButton = new CCustomMFCRibbonButton( 0, L"", props->m_hIcon );
+            friendly_CMFCToolTipCtrl * pToolTip = static_cast < friendly_CMFCToolTipCtrl * > ( props->m_pToolTip );
+            pToolTip->m_pRibbonButton = props->m_pRibbonButton;
+            props->m_pToolTip->SetParams( &props->m_props );
+        }
+    } else {
+        delete props;
+    }
+
+    return bResult;
+}
+
+BOOL CToolTipDataProvider::OnGetMessageString( UINT nID, CString & rMessage ) {
+    CToolTipDataProviderProperties * props = NULL;
+    m_toolTipDataMap.Lookup( nID, props );
+    if ( props != NULL && !props->m_strDescription.IsEmpty() ) {
+        rMessage = props->m_strDescription;
+        return TRUE;
+    }
     return FALSE;
 }
 
-BOOL CToolTipTextProvider::OnGetMessageString( UINT /*nID*/, CString & /*rMessage*/ ) {
+BOOL CToolTipDataProvider::FillToolTipProperties( CToolTipDataProviderProperties & props ) {
     return FALSE;
 }
 
 
-// CToolTipTextProviderList
+// CToolTipDataProviderList
 
-CToolTipTextProviderList::CToolTipTextProviderList() {
+CToolTipDataProviderList::CToolTipDataProviderList() {
 }
 
-CToolTipTextProviderList::~CToolTipTextProviderList() {
+CToolTipDataProviderList::~CToolTipDataProviderList() {
 }
 
-BOOL CToolTipTextProviderList::OnGetToolTipText( CMFCToolBarButton * pButton, CString & strTTText ) {
+BOOL CToolTipDataProviderList::OnGetToolTipText( CMFCToolBarButton * pButton, CString & strTTText ) {
     BOOL bResult = FALSE;
     // calling items' OnGetToolTipText until TRUE is returned
     POSITION pos = GetHeadPosition();
-    while ( pos && bResult == FALSE ) {
+    while ( pos != NULL && bResult == FALSE ) {
         bResult = GetNext( pos )->OnGetToolTipText( pButton, strTTText );
     }
     return bResult;
 }
 
-void CToolTipTextProviderList::OnGetMessageString( UINT nID, CString & rMessage ) const {
+void CToolTipDataProviderList::OnGetMessageString( UINT nID, CString & rMessage ) const {
     // calling items' OnGetMessageString until TRUE is returned
     POSITION pos = GetHeadPosition();
-    while ( pos && GetNext( pos )->OnGetMessageString( nID, rMessage ) == FALSE ) {
+    while ( pos != NULL && GetNext( pos )->OnGetMessageString( nID, rMessage ) == FALSE ) {
         // continue
     }
 }
 
-void CToolTipTextProviderList::AddProvider( CToolTipTextProvider * item ) {
+void CToolTipDataProviderList::AddProvider( CToolTipDataProvider * item ) {
     if ( Find( item ) == NULL ) {
         AddTail( item );
     }
 }
 
-void CToolTipTextProviderList::RemoveProvider( CToolTipTextProvider * item ) {
+void CToolTipDataProviderList::RemoveProvider( CToolTipDataProvider * item ) {
     POSITION pos = Find( item );
     if ( pos != NULL ) {
         RemoveAt( pos );
@@ -77,20 +160,15 @@ void CToolTipTextProviderList::RemoveProvider( CToolTipTextProvider * item ) {
 }
 
 
-// CMFCPropertySheetToolTipTextProvider
+// CMFCPropertySheetToolTipDataProvider
 
-CMFCPropertySheetToolTipTextProvider::CMFCPropertySheetToolTipTextProvider( CToolTipTextProviderList * list, CMFCPropertySheet * pPropertySheet )
-    : CToolTipTextProvider( list )
+CMFCPropertySheetToolTipDataProvider::CMFCPropertySheetToolTipDataProvider( CToolTipDataProviderList * list, CMFCPropertySheet * pPropertySheet )
+    : CToolTipDataProvider( list )
     , m_pPropertySheet( pPropertySheet )
 {
 }
 
-// the hack to access CMFCPropertySheet internal structures from here
-class friendly_CMFCPropertySheet: public CMFCPropertySheet {
-    friend class CMFCPropertySheetToolTipTextProvider;
-};
-
-BOOL CMFCPropertySheetToolTipTextProvider::PrepareContext( CMFCToolBarButton * pToolBarButton, CMFCOutlookBarPaneButton * &pOutlookBarPaneButton, CMFCPropertyPage * &pPropertyPage ) {
+BOOL CMFCPropertySheetToolTipDataProvider::PrepareContext( CMFCToolBarButton * pToolBarButton, CMFCOutlookBarPaneButton * &pOutlookBarPaneButton, CMFCPropertyPage * &pPropertyPage ) {
     pOutlookBarPaneButton = NULL;
     pPropertyPage = NULL;
 
@@ -121,38 +199,19 @@ BOOL CMFCPropertySheetToolTipTextProvider::PrepareContext( CMFCToolBarButton * p
     return pOutlookBarPaneButton != NULL && pPropertyPage != NULL;
 }
 
-
-BOOL CMFCPropertySheetToolTipTextProvider::OnGetToolTipText( CMFCToolBarButton * pButton, CString & strTTText ) {
+BOOL CMFCPropertySheetToolTipDataProvider::FillToolTipProperties( CToolTipDataProviderProperties & props ) {
     CMFCPropertyPage * pPropertyPage = NULL;
     CMFCOutlookBarPaneButton * pOutlookButton = NULL;
-    if ( PrepareContext( pButton, pOutlookButton, pPropertyPage ) ) {
+    if ( PrepareContext( props.m_pButton, pOutlookButton, pPropertyPage ) ) {
         // Now that we know everything related to the tooltip needed, we are obtaining the tooltip text.
-        if ( pButton->m_nID == 0 ) {
-            pButton->m_nID = PtrToUint( pButton ); // unique low-DWORD-adress-based command
-            m_buttonsByID[ pButton->m_nID ] = pButton;
-        }
-        return FillToolTipText( pOutlookButton, pPropertyPage, strTTText );
+        friendly_CMFCPropertySheet * pPropertySheet = static_cast < friendly_CMFCPropertySheet * > ( m_pPropertySheet );
+        CToolTipCtrl * pToolTip = ( static_cast < friendly_CMFCOutlookBarPaneList * > ( &pPropertySheet->m_wndPane1 ) )->m_pToolTip;
+        props.m_pToolTip = dynamic_cast < CMFCToolTipCtrl * > ( pToolTip );
+        return FillToolTipProperties( pOutlookButton, pPropertyPage, props );
     }
     return FALSE;
 }
 
-BOOL CMFCPropertySheetToolTipTextProvider::OnGetMessageString( UINT nID, CString & rMessage ) {
-    CMFCToolBarButton * pButton = NULL;
-    m_buttonsByID.Lookup( nID, pButton );
-    if ( pButton != NULL ) {
-        CMFCPropertyPage * pPropertyPage = NULL;
-        CMFCOutlookBarPaneButton * pOutlookButton = NULL;
-        if ( PrepareContext( pButton, pOutlookButton, pPropertyPage ) ) {
-            return FillToolTipDescription( pOutlookButton, pPropertyPage, rMessage );
-        }
-    }
-    return FALSE;
-}
-
-BOOL CMFCPropertySheetToolTipTextProvider::FillToolTipText( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CString & strTTText ) {
-    return FALSE;
-}
-
-BOOL CMFCPropertySheetToolTipTextProvider::FillToolTipDescription( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CString & rMessage ) {
+BOOL CMFCPropertySheetToolTipDataProvider::FillToolTipProperties( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CToolTipDataProviderProperties & props ) {
     return FALSE;
 }

@@ -8,9 +8,9 @@
 BEGIN_MESSAGE_MAP( ContextPropSheet, CMFCPropertySheet )
 END_MESSAGE_MAP()
 
-ContextPropSheet::ContextPropSheet( CToolTipTextProviderList * list )
+ContextPropSheet::ContextPropSheet( CToolTipDataProviderList * list )
 	: CMFCPropertySheet( L"Context", this )
-	, CMFCPropertySheetToolTipTextProvider( list, this )
+	, CMFCPropertySheetToolTipDataProvider( list, this )
 {
 	SetLook( CMFCPropertySheet::PropSheetLook_OutlookBar ); // outlookbar mode not tree or list so page icons will show up and so tooltips will appear
 	SetIconsList( IDB_CONTEXT_LARGE, 32 );
@@ -25,49 +25,22 @@ BOOL ContextPropSheet::OnInitDialog()
 	return bResult;
 }
 
-// the hack to access internal structures from here
-class friendly_CMFCOutlookBarPaneList: public CMFCOutlookBarPaneList {
-	friend class ContextPropSheet;
-};
-class friendly_CMFCToolTipCtrl: public CMFCToolTipCtrl {
-	friend class ContextPropSheet;
-};
-
-class CCustomMFCRibbonButton: public CMFCRibbonButton {
-public:
-	CCustomMFCRibbonButton( UINT nID, LPCTSTR lpszText, HICON hIcon, BOOL bAlwaysShowDescription = FALSE, HICON hIconSmall = NULL, BOOL bAutoDestroyIcon = FALSE, BOOL bAlphaBlendIcon = FALSE )
-		: CMFCRibbonButton( nID, lpszText, hIcon, bAlwaysShowDescription, hIconSmall, bAutoDestroyIcon, bAlphaBlendIcon )
-	{
-		m_bIsLargeImage = TRUE;
-	}
-};
-
-BOOL ContextPropSheet::FillToolTipText( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CString & strTTText ) {
-	CToolTipCtrl * pToolTip = ( static_cast < friendly_CMFCOutlookBarPaneList * > ( &m_wndPane1 ) )->m_pToolTip;
-	CMFCToolTipCtrl * _pMFCToolTip = dynamic_cast < CMFCToolTipCtrl * > ( pToolTip );
-	friendly_CMFCToolTipCtrl * pMFCToolTip = static_cast < friendly_CMFCToolTipCtrl * > ( _pMFCToolTip );
+BOOL ContextPropSheet::FillToolTipProperties( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CToolTipDataProviderProperties & props ) {
 	int iPageIndex = GetPageIndex( pPropertyPage );
 	if ( iPageIndex != -1 ) {
-		HICON hIcon = m_Icons.ExtractIconW( iPageIndex );
-		CMFCRibbonButton * pRibbonButton = new CCustomMFCRibbonButton( 0, L"", hIcon ); // leak
-		pMFCToolTip->m_pRibbonButton = pRibbonButton;
+		props.m_hIcon = m_Icons.ExtractIconW( iPageIndex );
 	}
+	props.m_strDescription = m_strCaption;
+	props.m_strDescription += ", ";
+	props.m_strDescription += pButton->m_strText;
+	props.m_strDescription += " tooltip at time ";
+	props.m_strDescription += CTime::GetCurrentTime().Format( "%H:%M:%S" );
+	props.m_props.m_nMaxDescrWidth = GetSystemMetrics( SM_CYSCREEN ) / 2;
+	//props.m_props.m_bDrawSeparator = FALSE;
+
 	PropPage1 * pp1 = dynamic_cast < PropPage1 * > ( pPropertyPage );
 	if ( pp1 != NULL ) {
-		const CMFCToolTipInfo & oldParams = pMFCToolTip->GetParams();
-		CMFCToolTipInfo newParams( oldParams );
-		newParams.m_nMaxDescrWidth = GetSystemMetrics( SM_CYSCREEN ) / 2;
-		pMFCToolTip->SetParams( &newParams );
-		strTTText = pp1->m_stringID;// +pp1->m_stringID + pp1->m_stringID + pp1->m_stringID;
+		props.m_strText = pp1->m_stringID;
 	}
-	return TRUE;
-}
-
-BOOL ContextPropSheet::FillToolTipDescription( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CString & rMessage ) {
-	rMessage = m_strCaption;
-	rMessage += ", ";
-	rMessage += pButton->m_strText;
-	rMessage += " tooltip at time ";
-	rMessage += CTime::GetCurrentTime().Format( "%H:%M:%S" );
 	return TRUE;
 }
