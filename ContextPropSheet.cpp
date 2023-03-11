@@ -25,17 +25,45 @@ BOOL ContextPropSheet::OnInitDialog()
 	return bResult;
 }
 
+// the hack to access internal structures from here
+class friendly_CMFCOutlookBarPaneList: public CMFCOutlookBarPaneList {
+	friend class ContextPropSheet;
+};
+class friendly_CMFCToolTipCtrl: public CMFCToolTipCtrl {
+	friend class ContextPropSheet;
+};
+
+class CCustomMFCRibbonButton: public CMFCRibbonButton {
+public:
+	CCustomMFCRibbonButton( UINT nID, LPCTSTR lpszText, HICON hIcon, BOOL bAlwaysShowDescription = FALSE, HICON hIconSmall = NULL, BOOL bAutoDestroyIcon = FALSE, BOOL bAlphaBlendIcon = FALSE )
+		: CMFCRibbonButton( nID, lpszText, hIcon, bAlwaysShowDescription, hIconSmall, bAutoDestroyIcon, bAlphaBlendIcon )
+	{
+		m_bIsLargeImage = TRUE;
+	}
+};
+
 BOOL ContextPropSheet::FillToolTipText( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CString & strTTText ) {
-	strTTText = m_strCaption;
-	strTTText += ", ";
-	strTTText += pButton->m_strText;
-	strTTText += " tooltip at time ";
-	strTTText += CTime::GetCurrentTime().Format( "%H:%M:%S" );
+	CToolTipCtrl * pToolTip = ( static_cast < friendly_CMFCOutlookBarPaneList * > ( &m_wndPane1 ) )->m_pToolTip;
+	CMFCToolTipCtrl * _pMFCToolTip = dynamic_cast < CMFCToolTipCtrl * > ( pToolTip );
+	friendly_CMFCToolTipCtrl * pMFCToolTip = static_cast < friendly_CMFCToolTipCtrl * > ( _pMFCToolTip );
+	int iPageIndex = GetPageIndex( pPropertyPage );
+	if ( iPageIndex != -1 ) {
+		HICON hIcon = m_Icons.ExtractIconW( iPageIndex );
+		CMFCRibbonButton * pRibbonButton = new CCustomMFCRibbonButton( 0, L"", hIcon ); // leak
+		pMFCToolTip->m_pRibbonButton = pRibbonButton;
+	}
 	PropPage1 * pp1 = dynamic_cast < PropPage1 * > ( pPropertyPage );
 	if ( pp1 != NULL ) {
-		strTTText += " (";
-		strTTText += pp1->m_stringID;
-		strTTText += ")";
+		strTTText = pp1->m_stringID;
 	}
+	return TRUE;
+}
+
+BOOL ContextPropSheet::FillToolTipDescription( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CString & rMessage ) {
+	rMessage = m_strCaption;
+	rMessage += ", ";
+	rMessage += pButton->m_strText;
+	rMessage += " tooltip at time ";
+	rMessage += CTime::GetCurrentTime().Format( "%H:%M:%S" );
 	return TRUE;
 }

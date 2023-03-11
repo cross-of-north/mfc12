@@ -32,6 +32,10 @@ BOOL CToolTipTextProvider::OnGetToolTipText( CMFCToolBarButton * /*pButton*/, CS
     return FALSE;
 }
 
+BOOL CToolTipTextProvider::OnGetMessageString( UINT /*nID*/, CString & /*rMessage*/ ) {
+    return FALSE;
+}
+
 
 // CToolTipTextProviderList
 
@@ -49,6 +53,14 @@ BOOL CToolTipTextProviderList::OnGetToolTipText( CMFCToolBarButton * pButton, CS
         bResult = GetNext( pos )->OnGetToolTipText( pButton, strTTText );
     }
     return bResult;
+}
+
+void CToolTipTextProviderList::OnGetMessageString( UINT nID, CString & rMessage ) const {
+    // calling items' OnGetMessageString until TRUE is returned
+    POSITION pos = GetHeadPosition();
+    while ( pos && GetNext( pos )->OnGetMessageString( nID, rMessage ) == FALSE ) {
+        // continue
+    }
 }
 
 void CToolTipTextProviderList::AddProvider( CToolTipTextProvider * item ) {
@@ -78,40 +90,69 @@ class friendly_CMFCPropertySheet: public CMFCPropertySheet {
     friend class CMFCPropertySheetToolTipTextProvider;
 };
 
-BOOL CMFCPropertySheetToolTipTextProvider::OnGetToolTipText( CMFCToolBarButton * pButton, CString & strTTText ) {
-    if ( pButton != NULL ) {
-        
+BOOL CMFCPropertySheetToolTipTextProvider::PrepareContext( CMFCToolBarButton * pToolBarButton, CMFCOutlookBarPaneButton * &pOutlookBarPaneButton, CMFCPropertyPage * &pPropertyPage ) {
+    pOutlookBarPaneButton = NULL;
+    pPropertyPage = NULL;
+
+    if ( pToolBarButton != NULL ) {
+
         // searching the parent sheet up to the windows hierarchy
-        
-        CWnd * pWnd = pButton->GetParentWnd();
+
+        CWnd * pWnd = pToolBarButton->GetParentWnd();
         while ( pWnd != NULL ) {
             if ( pWnd == static_cast < CWnd * > ( m_pPropertySheet ) ) {
-                
+
                 // found
-                
+
                 // determining property page by the button index
                 CMFCOutlookBarPaneList & pOutlookBarPaneList = static_cast < friendly_CMFCPropertySheet * > ( m_pPropertySheet )->m_wndPane1;
-                int buttonIndex = pOutlookBarPaneList.ButtonToIndex( pButton );
+                int buttonIndex = pOutlookBarPaneList.ButtonToIndex( pToolBarButton );
                 if ( buttonIndex != -1 ) {
-                    CMFCPropertyPage * pPropertyPage = dynamic_cast < CMFCPropertyPage * > ( m_pPropertySheet->GetPage( buttonIndex ) );
-                    CMFCOutlookBarPaneButton * pOutlookButton = dynamic_cast < CMFCOutlookBarPaneButton * > ( pButton );
-                    if ( 
-                        pPropertyPage != NULL && 
-                        pOutlookButton != NULL && 
-                        // Now that we know everything related to the tooltip needed, we are obtaining the tooltip text.
-                        FillToolTipText( pOutlookButton, pPropertyPage, strTTText ) == TRUE
-                     ) {
-                        return TRUE;
-                    }
+                    pPropertyPage = dynamic_cast < CMFCPropertyPage * > ( m_pPropertySheet->GetPage( buttonIndex ) );
+                    pOutlookBarPaneButton = dynamic_cast < CMFCOutlookBarPaneButton * > ( pToolBarButton );
+                    break;
                 }
 
             }
             pWnd = pWnd->GetParent();
         };
     }
+
+    return pOutlookBarPaneButton != NULL && pPropertyPage != NULL;
+}
+
+
+BOOL CMFCPropertySheetToolTipTextProvider::OnGetToolTipText( CMFCToolBarButton * pButton, CString & strTTText ) {
+    CMFCPropertyPage * pPropertyPage = NULL;
+    CMFCOutlookBarPaneButton * pOutlookButton = NULL;
+    if ( PrepareContext( pButton, pOutlookButton, pPropertyPage ) ) {
+        // Now that we know everything related to the tooltip needed, we are obtaining the tooltip text.
+        if ( pButton->m_nID == 0 ) {
+            pButton->m_nID = PtrToUint( pButton ); // unique low-DWORD-adress-based command
+            m_buttonsByID[ pButton->m_nID ] = pButton;
+        }
+        return FillToolTipText( pOutlookButton, pPropertyPage, strTTText );
+    }
+    return FALSE;
+}
+
+BOOL CMFCPropertySheetToolTipTextProvider::OnGetMessageString( UINT nID, CString & rMessage ) {
+    CMFCToolBarButton * pButton = NULL;
+    m_buttonsByID.Lookup( nID, pButton );
+    if ( pButton != NULL ) {
+        CMFCPropertyPage * pPropertyPage = NULL;
+        CMFCOutlookBarPaneButton * pOutlookButton = NULL;
+        if ( PrepareContext( pButton, pOutlookButton, pPropertyPage ) ) {
+            return FillToolTipDescription( pOutlookButton, pPropertyPage, rMessage );
+        }
+    }
     return FALSE;
 }
 
 BOOL CMFCPropertySheetToolTipTextProvider::FillToolTipText( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CString & strTTText ) {
+    return FALSE;
+}
+
+BOOL CMFCPropertySheetToolTipTextProvider::FillToolTipDescription( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CString & rMessage ) {
     return FALSE;
 }

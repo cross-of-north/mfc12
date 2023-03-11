@@ -240,3 +240,7 @@ void MainFrame::OnContext()
 BOOL MainFrame::GetToolbarButtonToolTipText( CMFCToolBarButton * pButton, CString & strTTText ) {
 	return m_tooltipProvider.OnGetToolTipText( pButton, strTTText );
 }
+
+void MainFrame::GetMessageString( UINT nID, CString & rMessage ) const {
+	m_tooltipProvider.OnGetMessageString( nID, rMessage );
+}

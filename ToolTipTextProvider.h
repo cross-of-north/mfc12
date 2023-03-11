@@ -82,6 +82,8 @@ public:
 	// The method should filter requests and process only those, which are related to this instance.
 	// Should update strTTText and return TRUE if the request for the tooltip text is processed.
 	virtual BOOL OnGetToolTipText( CMFCToolBarButton * pButton, CString & strTTText );
+
+	virtual BOOL OnGetMessageString( UINT nID, CString & rMessage );
 };
 
 
@@ -104,6 +106,8 @@ public:
 	// Should be called from CMDIFrameWndEx::GetToolbarButtonToolTipText.
 	// Translates the tooltip text request to all registered processors.
 	BOOL OnGetToolTipText( CMFCToolBarButton * pButton, CString & strTTText );
+
+	void OnGetMessageString( UINT nID, CString & rMessage ) const;
 };
 
 
@@ -117,8 +121,14 @@ protected:
 	// Parent sheet.
 	CMFCPropertySheet * m_pPropertySheet;
 
+	CMap < UINT, UINT, CMFCToolBarButton *, CMFCToolBarButton * > m_buttonsByID;
+
+	BOOL PrepareContext( CMFCToolBarButton * pToolBarButton, CMFCOutlookBarPaneButton *& pOutlookBarPaneButton, CMFCPropertyPage *& pPropertyPage );
+
 	// Contains CMFCPropertySheet-specific logic. Calls FillToolTipText if notification is related to m_pPropertySheet.
 	virtual BOOL OnGetToolTipText( CMFCToolBarButton * pButton, CString & strTTText );
+
+	virtual BOOL OnGetMessageString( UINT nID, CString & rMessage );
 
 public:
 
@@ -131,4 +141,6 @@ public:
 	// The related button and property page objects are deduced and are passed to the function.
 	// Note that HWND-related structures in pPropertyPage can be in non-initialized state if the corresponding page was not activated yet.
 	virtual BOOL FillToolTipText( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CString & strTTText );
+
+	virtual BOOL FillToolTipDescription( CMFCOutlookBarPaneButton * pButton, CMFCPropertyPage * pPropertyPage, CString & rMessage );
 };

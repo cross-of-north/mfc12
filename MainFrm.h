@@ -64,6 +64,7 @@ protected:
 	BOOL CreateCaptionBar();
 	afx_msg void OnContext();
 	virtual BOOL GetToolbarButtonToolTipText( CMFCToolBarButton * pButton, CString & strTTText );
+	virtual void GetMessageString( UINT nID, CString & rMessage ) const;
 };
 
 
