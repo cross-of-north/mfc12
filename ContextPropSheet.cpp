@@ -54,7 +54,11 @@ BOOL ContextPropSheet::FillToolTipText( CMFCOutlookBarPaneButton * pButton, CMFC
 	}
 	PropPage1 * pp1 = dynamic_cast < PropPage1 * > ( pPropertyPage );
 	if ( pp1 != NULL ) {
-		strTTText = pp1->m_stringID;
+		const CMFCToolTipInfo & oldParams = pMFCToolTip->GetParams();
+		CMFCToolTipInfo newParams( oldParams );
+		newParams.m_nMaxDescrWidth = GetSystemMetrics( SM_CYSCREEN ) / 2;
+		pMFCToolTip->SetParams( &newParams );
+		strTTText = pp1->m_stringID;// +pp1->m_stringID + pp1->m_stringID + pp1->m_stringID;
 	}
 	return TRUE;
 }
