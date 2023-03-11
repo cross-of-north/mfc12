@@ -54,7 +54,7 @@
     <ClInclude Include="MyListCtrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ToolTipTextProvider.h">
+    <ClInclude Include="ToolTipDataProvider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -89,7 +89,7 @@
     <ClCompile Include="MyListCtrl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ToolTipTextProvider.cpp">
+    <ClCompile Include="ToolTipDataProvider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

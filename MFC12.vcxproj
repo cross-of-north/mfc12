@@ -196,7 +196,7 @@
     <ClInclude Include="PropPage1.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="ToolTipTextProvider.h" />
+    <ClInclude Include="ToolTipDataProvider.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChildFrm.cpp" />
@@ -214,7 +214,7 @@
     </ClCompile>
     <ClCompile Include="PropertiesWnd.cpp" />
     <ClCompile Include="PropPage1.cpp" />
-    <ClCompile Include="ToolTipTextProvider.cpp" />
+    <ClCompile Include="ToolTipDataProvider.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MFC12.rc" />

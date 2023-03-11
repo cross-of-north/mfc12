@@ -1,6 +1,6 @@
 
 #include "pch.h"
-#include "ToolTipTextProvider.h"
+#include "ToolTipDataProvider.h"
 
 
 class CCustomMFCRibbonButton: public CMFCRibbonButton {

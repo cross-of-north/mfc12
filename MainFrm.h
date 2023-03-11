@@ -14,7 +14,7 @@
 
 #pragma once
 #include "PropertiesWnd.h"
-#include "ToolTipTextProvider.h"
+#include "ToolTipDataProvider.h"
 
 class MainFrame : public CMDIFrameWndEx
 {
