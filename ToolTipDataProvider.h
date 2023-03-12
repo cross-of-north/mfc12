@@ -67,6 +67,9 @@ Usage:
 			props.m_strText = L"Decorated button text: ==> ";
 			props.m_strText += pButton->m_strText;
 			props.m_strText += L" <==";
+			props.m_strDescription = L"Extended tooltip descrition";
+			props.m_props.m_bDrawSeparator = FALSE;
+			props.m_props.m_nMaxDescrWidth = GetSystemMetrics( SM_CXSCREEN ) / 3;
 			return TRUE;
 		}
 	...
